@@ -19,7 +19,7 @@ public class Line implements Comparable<Line> {
         stations.add(station);
     }
 
-    public String getNum() {
+    public String getNumber() {
         return number;
     }
 
@@ -29,11 +29,6 @@ public class Line implements Comparable<Line> {
 
     public List<Station> getStations() {
         return stations;
-    }
-
-    @Override
-    public int compareTo(Line line) {
-        return Double.compare(stringToDouble(number), stringToDouble(line.getNum()));
     }
 
     public double stringToDouble(String number) {
@@ -47,12 +42,20 @@ public class Line implements Comparable<Line> {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        return compareTo((Line) obj) == 0;
+    public int compareTo(Line line) {
+        return Double.compare(stringToDouble(number), stringToDouble(line.getNumber()));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Line lineO = (Line) o;
+        return name.equals(lineO.name) && number.equals(lineO.number);
     }
 
     @Override
     public String toString() {
-        return name;
+        return number + ":" + name;
     }
 }

@@ -1,3 +1,5 @@
+package core;
+
 import core.Line;
 import core.Station;
 import org.jsoup.nodes.Document;
@@ -36,25 +38,6 @@ public class StationIndex {
         // Три таблицы со станциями: Метро, Монорельс, МЦК
         Elements tablesWithStations = doc.select("table.standard.sortable");
 
-//        Как лучше в этом случае: циклы или стрим?
-//        И почему то у меня не получилось перевести в стрим элементы cells и linesOnOneStation
-
-//        tablesWithStations
-//                .forEach(table -> table.select("tr")
-//                        .forEach(row -> {
-//                                    Elements cells = row.select("td");
-//                                    if (!cells.isEmpty()) {
-//                                        int linesOnOneStation = cells.get(0).select("span[title]").size();
-//                                        for (int i = 0; i < linesOnOneStation; i++) {
-//                                            Line line = parseLine(cells, i);
-//                                            Station station = parseStation(cells, line);
-//                                            connectionsAsString.addAll(parseConnectionsAsString(cells, station));
-//                                        }
-//                                    }
-//                                }
-//                        )
-//                );
-
         for (Element table : tablesWithStations) {
             Elements rows = table.select("tr");
 
@@ -72,21 +55,18 @@ public class StationIndex {
             }
         }
 
-        // Как лучше: возвращать данные из метода и добавлять значения здесь,
-        // или сделать методы parseConnections(connectionsAsString) и parseNodes(connections) типом void,
-        // чтобы они все данные в процесе работы методов заполнили?
         connections.putAll(parseConnections(connectionsAsString));
         nodes.addAll(parseNodes(connections));
     }
 
     public void addLine(Line line) {
-        lines.put(line.getNum(), line);
+        lines.put(line.getNumber(), line);
     }
 
     public void addStation(Station station) {
-        String key = station.getLine().getNum() + ":" + station.getName();
+        String key = station.getLine().getNumber() + ":" + station.getName();
         stations.put(key, station);
-        station.getLine().addStation(station);
+//        station.getLine().addStation(station);
     }
 
     private Line parseLine(Elements cells, int i) {
@@ -117,9 +97,9 @@ public class StationIndex {
         }
 
         if (cells.get(1).html().contains("акрыт")) { // (З|з)акрыт(а|о)
-            final String dateRegex = "^.*([1-9]|[0-3]\\d)(\\.|\\s+)(0?[1-9]|1[0-2]|января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)(\\.|\\s+)((\\d\\d)|(19[6-9]\\d|20\\d\\d))($|\\s|\\)|г)";
-            String dateAsString = cells.get(1).select("small").text().replaceAll(dateRegex, "$1 $3 $5");
-            station.setClosingDate(LocalDate.parse(dateAsString, DateTimeFormatter.ofPattern("d MMMM yyyy")));
+//            final String dateRegex = "^.*([1-9]|[0-3]\\d)(\\.|\\s+)(0?[1-9]|1[0-2]|января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря)(\\.|\\s+)((\\d\\d)|(19[6-9]\\d|20\\d\\d))($|\\s|\\)|г)";
+//            String dateAsString = cells.get(1).select("small").text().replaceAll(dateRegex, "$1 $3 $5");
+//            station.setClosingDate(LocalDate.parse(dateAsString, DateTimeFormatter.ofPattern("d MMMM yyyy")));
 
             station.setIsClosed(true);
             closedStationsCount++;
@@ -127,7 +107,6 @@ public class StationIndex {
         return station;
     }
 
-    // Надо ли сокращать такие длинные имена, как getConnectedStationsNames итп?
     private Set<String> parseConnectionsAsString(Elements cells, Station station) {
         Set<String> connectionsAsString = new TreeSet<>(String::compareTo);
         List<String> connectedLinesNums = getConnectedLinesNums(cells);
@@ -140,7 +119,7 @@ public class StationIndex {
                 connectedStationsSet.add(connectedLinesNums.get(i) + ":" + connectedStationsNames.get(i));
             }
 
-            String stationAsString = station.getLine().getNum() + ":" + station.getName();
+            String stationAsString = station.getLine().getNumber() + ":" + station.getName();
             String connectedStationsAsString = connectedStationsSet.toString()
                     .substring(1, connectedStationsSet.toString().length() - 1);
             connectionsAsString.add(stationAsString + " --> " + connectedStationsAsString);
@@ -150,7 +129,6 @@ public class StationIndex {
 
     private Map<Station, TreeSet<Station>> parseConnections(Set<String> connectionsAsString) {
         Map<Station, TreeSet<Station>> connections = new LinkedHashMap<>();
-
         for (String c : connectionsAsString) {
             String[] connectAsStringSplit = c.split(" --> ");
             Station stationFrom = stations.get(connectAsStringSplit[0]);
@@ -171,7 +149,6 @@ public class StationIndex {
     }
 
     private Set<Set<Station>> parseNodes(Map<Station, TreeSet<Station>> connectionsAsString) {
-
         Set<Set<Station>> connectionsSet = new TreeSet<>(Comparator.comparing(Set::toString));
         connectionsAsString.forEach((k, v) -> {
             Set<Station> conection = new TreeSet<>(Station::compareTo);
@@ -179,19 +156,14 @@ public class StationIndex {
             conection.addAll(v);
             connectionsSet.add(conection);
         });
-
-        // Как лучше: сделать комментарий, или вынести эту часть кода в отдельный метод?
-
         // Приводим к одному виду разные переходы с одинаковой первой станцией
         List<Set<Station>> connectionsList = new LinkedList<>(connectionsSet);
         for (int i = 0; i < connectionsList.size() - 1; i++) {
-
             List<Station> thisStations = new LinkedList<>(connectionsList.get(i));
             List<Station> nextStations = new LinkedList<>(connectionsList.get(i + 1));
 
             Set<Station> tempSet1 = new TreeSet<>(Station::compareTo);
             if (thisStations.get(0).equals(nextStations.get(0))) {
-
                 tempSet1.addAll(thisStations);
                 tempSet1.addAll(nextStations);
                 connectionsList.set(i, tempSet1);
@@ -228,7 +200,7 @@ public class StationIndex {
                 .collect(Collectors.toList());
     }
 
-    void printStationIndex(boolean expand) {
+    public void printStationIndex(boolean expand) {
         System.out.printf("Линий:             \t%3s\n", lines.size());
         System.out.printf("Станций:           \t%3s (из них закрыто %s станций)\n", stations.size(), closedStationsCount);
         System.out.printf("Переходов:         \t%3s\n", connections.size());
@@ -237,7 +209,7 @@ public class StationIndex {
         System.out.printf("\n%-36s | %s станции на %s линиях\n", "ЛИНИИ И СТАНЦИИ", stations.size(), lines.size());
         System.out.println("в том числе:");
         lines.values().stream().sorted().forEach(line -> {
-            System.out.printf("%-3s %-32s | Станций: %3s\n", line.getNum(), line.getName(), line.getStations().size());
+            System.out.printf("%-3s %-32s | Станций: %3s\n", line.getNumber(), line.getName(), line.getStations().size());
             if (expand) printEachStation(line);
         });
 
@@ -257,17 +229,13 @@ public class StationIndex {
 
     private void printEachClosedStation() {
         stations.values().stream().sorted().filter(Station::getIsClosed)
-                .forEach(s -> System.out.printf("%-3s:%-32s\tзакрыта с %s\n",
-                        s.getLine().getNum(), s.getName(), s.getClosingDate()));
+//                .forEach(s -> System.out.printf("%-3s:%-32s\tзакрыта с %s\n",
+//                        s.getLine().getNumber(), s.getName(), s.getClosingDate()));
+        .forEach(s -> System.out.printf("%-3s:%-32s\tзакрыта\n",
+                        s.getLine().getNumber(), s.getName()));
     }
 
     private void printEachConnect() {
-
-//        Как в этом случае лучше вывести массив одной строкой без []: через substring, или в цикле?
-
-//        connections.forEach((stationFrom, stationsTo) -> System.out.printf("%-36s\t-->\t\t%s\n", stationFrom,
-//                stationsTo.toString().substring(1, stationsTo.toString().length() - 1)));
-
         for (Map.Entry<Station, TreeSet<Station>> entry : connections.entrySet()) {
             System.out.printf("%-36s\t-->\t\t", entry.getKey());
             for (Station station : entry.getValue()) {
@@ -278,14 +246,6 @@ public class StationIndex {
     }
 
     private void printEachNodes() {
-
-////        Как лучше в этом случае: циклы или стрим?
-
-//        nodes.forEach(node -> {
-//            node.forEach(station -> System.out.printf("%-36s\t", station));
-//            System.out.println();
-//        });
-
         for (Set<Station> node : nodes) {
             for (Station station : node) {
                 System.out.printf("%-36s\t", station);
