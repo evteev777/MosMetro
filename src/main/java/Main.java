@@ -1,9 +1,7 @@
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import core.StationIndex;
+import json.StationIndexSerializer;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -20,51 +18,21 @@ public class Main {
 
         try {
             StationIndex mosMetro;
-//            Scanner scanner = new Scanner(System.in);
-//
-//            System.out.println("Парсим веб-сайт или файл?");
-//            String input = scanner.nextLine();
-//
-//            if (input.contains("f") || input.contains("ф")) {
-//                final String FILE = "src/main/resources/MosMetro.html";
-//                Document fromFile = Jsoup.parse(readFile(FILE));
-//                mosMetro = new core.StationIndex(fromFile);
-//            } else {
-                final String LINK = "https://ru.wikipedia.org/wiki/Список_станций_Московского_метрополитена";
-                Document fromLink = Jsoup.connect(LINK).userAgent("Mozilla").maxBodySize(0).get();
-                mosMetro = new StationIndex(fromLink);
-//            }
-//
-//            System.out.println("Расшифровать списки линий, станций, переходов и пересадочных узлов?");
-//            input = scanner.nextLine();
-//
-//            boolean expand = false;
-//            if (input.contains("y") || input.contains("д")) {
-//                expand = true;
-//            }
-//            mosMetro.printStationIndex(expand);
 
-            mosMetro.printStationIndex(true);
+            final String LINK = "https://ru.wikipedia.org/wiki/Список_станций_Московского_метрополитена";
+            Document fromLink = Jsoup.connect(LINK).userAgent("Mozilla").maxBodySize(0).get();
+            mosMetro = new StationIndex(fromLink);
 
-            File jacksonFile = new File("src/main/resources/jresult.json");
-            File gsonFile = new File("src/main/resources/gresult.json");
+            final File gsonFile = new File("src/main/resources/mosmetro.json");
 
-            try {
-                ObjectMapper mapper = new ObjectMapper();
-                mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-                mapper.writeValue(jacksonFile, mosMetro);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            try(FileWriter writer = new FileWriter(gsonFile, false)) {
-                writer.write(gson.toJson(mosMetro));
-                writer.flush();
-            }
-            catch(IOException ex){
-                ex.printStackTrace();
-            }
+            Gson gson = new GsonBuilder()
+                    .setPrettyPrinting()
+                    .registerTypeAdapter(StationIndex.class, new StationIndexSerializer())
+                    .create();
+            FileWriter writer = new FileWriter(gsonFile, false);
+            writer.write(gson.toJson(mosMetro));
+            writer.flush();
+            writer.close();
 
         } catch (IOException e) {
             e.printStackTrace();

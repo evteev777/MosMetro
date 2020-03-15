@@ -6,19 +6,19 @@ import java.time.format.DateTimeFormatter;
 public class Station implements Comparable<Station> {
 
     private final String name;
-    private final Line line;
+    private final String lineNumber;
     private boolean isClosed;
-//    private LocalDate closingDate;
+    private LocalDate closingDate;
 
-    public Station(String name, Line line) {
+    public Station(String name, String lineNumber) {
         this.name = name;
-        this.line = line;
+        this.lineNumber = lineNumber;
         this.isClosed = false;
-//        this.closingDate = LocalDate.now();
+        this.closingDate = LocalDate.now();
     }
 
-    public Line getLine() {
-        return line;
+    public String getLineNumber() {
+        return lineNumber;
     }
 
     public String getName() {
@@ -33,17 +33,17 @@ public class Station implements Comparable<Station> {
         isClosed = closed;
     }
 
-//    public LocalDate getClosingDate() {
-//        return closingDate;
-//    }
+    public LocalDate getClosingDate() {
+        return closingDate;
+    }
 
-//    public void setClosingDate(LocalDate closingDate) {
-//        this.closingDate = closingDate;
-//    }
+    public void setClosingDate(LocalDate closingDate) {
+        this.closingDate = closingDate;
+    }
 
     @Override
     public int compareTo(Station station) {
-        int lineComparison = line.compareTo(station.getLine());
+        int lineComparison = lineNumber.compareTo(station.lineNumber);
         if(lineComparison != 0) {
             return lineComparison;
         }
@@ -55,14 +55,13 @@ public class Station implements Comparable<Station> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Station station = (Station) o;
-        return name.equals(station.name) && line.equals(station.line);
+        return name.equals(station.name) && lineNumber.equals(station.lineNumber);
     }
 
     @Override
     public String toString() {
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yy");
-        return line.getNumber() + ":" + name + (isClosed ?
-//                " (закрыта с " + formatter.format(closingDate) + ")" : "");
-                " (закрыта" + ")" : "");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yy");
+        return lineNumber + ":" + name + (isClosed ?
+                " (закрыта с " + formatter.format(closingDate) + ")" : "");
     }
 }
