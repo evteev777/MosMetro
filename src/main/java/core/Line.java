@@ -2,6 +2,7 @@ package core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Line implements Comparable<Line> {
 
@@ -51,7 +52,12 @@ public class Line implements Comparable<Line> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Line lineO = (Line) o;
-        return name.equals(lineO.name) && number.equals(lineO.number);
+        return number.equals(lineO.number) && name.equals(lineO.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(number, name);
     }
 
     @Override

@@ -174,8 +174,8 @@ public class StationIndex {
     }
 
     private String lineNumCorrection(String lineNum) {
-        return lineNum.replaceAll("(^\\d\\D)", "0$1") // добавляем ведущий 0 к номерам типа 8А
-                .replaceAll("(.*)(\\d{2}\\D*)$", "$2");// убираем ведущий 0 у номеров типа 011А
+        return lineNum.replaceAll("(^\\d\\D)", "0$1") // Добавляем ведущий 0 к номерам типа 8А
+                .replaceAll("(.*)(\\d{2}\\D*)$", "$2");// Убираем ведущий 0 у номеров типа 011А
     }
 
     private List<String> getConnectedStationsNames(Elements cells) {

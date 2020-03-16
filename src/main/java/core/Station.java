@@ -2,11 +2,12 @@ package core;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class Station implements Comparable<Station> {
 
-    private final String name;
-    private final String lineNumber;
+    private String name;
+    private String lineNumber;
     private boolean isClosed;
     private LocalDate closingDate;
 
@@ -15,6 +16,13 @@ public class Station implements Comparable<Station> {
         this.lineNumber = lineNumber;
         this.isClosed = false;
         this.closingDate = LocalDate.now();
+    }
+
+    public Station(String name, String lineNumber, boolean isClosed, LocalDate closingDate) {
+        this.name = name;
+        this.lineNumber = lineNumber;
+        this.isClosed = isClosed;
+        this.closingDate = closingDate;
     }
 
     public String getLineNumber() {
@@ -29,8 +37,8 @@ public class Station implements Comparable<Station> {
         return isClosed;
     }
 
-    public void setIsClosed(boolean closed) {
-        isClosed = closed;
+    public void setIsClosed(boolean isClosed) {
+        this.isClosed = isClosed;
     }
 
     public LocalDate getClosingDate() {
@@ -49,13 +57,17 @@ public class Station implements Comparable<Station> {
         }
         return name.compareToIgnoreCase(station.getName());
     }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Station station = (Station) o;
         return name.equals(station.name) && lineNumber.equals(station.lineNumber);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, lineNumber);
     }
 
     @Override
